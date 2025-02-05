@@ -1585,3 +1585,6 @@ cf0b95dd-4624-41fe-83d0-daadb325401a 2025-02-03 19:03:58.111004 [DEBUG] switch_c
 cf0b95dd-4624-41fe-83d0-daadb325401a 2025-02-03 19:03:58.111004 [DEBUG] mod_sofia.c:364 sofia/external-5082/0528826702@35.157.80.227 SOFIA DESTROY
 cf0b95dd-4624-41fe-83d0-daadb325401a 2025-02-03 19:03:58.111004 [DEBUG] switch_core_state_machine.c:181 sofia/external-5082/0528826702@35.157.80.227 Standard DESTROY
 cf0b95dd-4624-41fe-83d0-daadb325401a 2025-02-03 19:03:58.111004 [DEBUG] switch_core_state_machine.c:749 (sofia/external-5082/0528826702@35.157.80.227) State DESTROY going to sleep
+2025-02-04 09:32:08.584744 [WARNING] sofia_reg.c:1794 SIP auth challenge (REGISTER) on sofia profile 'internal' for [357@9505.ip-com.co.il] from ip 212.199.25.174
+2025-02-04 09:32:08.664741 [WARNING] sofia_reg.c:2930 Can't find user [357@9505.ip-com.co.il] from 212.199.25.174
+2025-02-04 09:32:08.664741 [WARNING] sofia_reg.c:1739 SIP auth failure (REGISTER) on sofia profile 'internal' for [357@9505.ip-com.co.il] from ip 212.199.25.174

@@ -4,16 +4,19 @@
   <meta charset="UTF-8">
   <title>Call Flow Diagram & SIP Auth Analysis</title>
   <link rel="stylesheet" href="/logs/static/styles.css">
+  <!-- Optionally include Bootstrap for styling -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
   <h1>Call Flow Diagram & SIP Auth Analysis</h1>
   
-  <!-- Row containing both forms -->
+  <!-- Forms go here (both call flow and SIP auth forms) -->
   <div class="form-row">
     <!-- Call Flow Log Form -->
     <div class="form-container">
       <h2>Call Flow Log</h2>
       <form action="/logs/" method="post">
+        <input type="hidden" name="action" value="callflow">
         <label for="number">Enter Dialed Number:</label>
         <input type="text" name="number" id="number" value="<%= number %>" required>
         <button type="submit">Search</button>
@@ -23,23 +26,39 @@
     <!-- SIP Auth Analysis Form -->
     <div class="form-container">
       <h2>SIP Auth Analysis</h2>
-      <form action="/sipauth/" method="post">
+      <form action="/logs/" method="post">
+        <input type="hidden" name="action" value="sipauth">
         <div class="input-row">
           <div class="input-group">
             <label for="extension">Extension:</label>
-            <input type="text" name="extension" id="extension" required>
+            <input type="text" name="extension" id="extension" required
+                   pattern="^(?:[2-3]\d{2})$" 
+                   title="Extension must be a three-digit number between 200 and 399">
           </div>
           <div class="input-group">
             <label for="domain">Domain:</label>
-            <input type="text" name="domain" id="domain" required>
+            <input type="text" name="domain" id="domain" required
+                   pattern="^[0-9]{4}\.ip-com\.co\.il$" 
+                   title="Domain must be in the format 9506.ip-com.co.il">
           </div>
         </div>
         <button type="submit">Analyze</button>
       </form>
     </div>
   </div>
-
-  <!-- Call Flow Diagram (if present) -->
+  
+  <!-- Display SIP Auth Analysis Result if present -->
+  <% if (sipAuthResult) { %>
+    <div class="sip-result-box sip-result-<%= sipAuthResult.type %>">
+      <p><%= sipAuthResult.message %></p>
+      <% if (sipAuthResult.logs) { %>
+        <pre><%= sipAuthResult.logs %></pre>
+      <% } %>
+    </div>
+  <% } %>
+  
+  
+  <!-- Call Flow Diagram Section (if applicable) -->
   <% if (flow && flow.length > 0) { %>
     <h2 style="text-align: center;">Call Flow Details</h2>
     <div class="diagram-container">
@@ -68,18 +87,8 @@
       <% }); %>
     </div>
   <% } %>
-
-  <!-- SIP Auth Analysis Log (if present) -->
-  <% if (typeof sipLog !== 'undefined' && sipLog) { %>
-    <h2 style="text-align: center;">SIP Auth Analysis Result</h2>
-    <div class="sip-log-container">
-      <pre><%= sipLog %></pre>
-    </div>
-  <% } %>
   
-
   <script>
-    // Toggle the expanded state of a box on click
     function toggleBox(element) {
       element.classList.toggle('expanded');
     }

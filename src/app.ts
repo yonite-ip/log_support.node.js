@@ -74,40 +74,34 @@ function processCallFlowLine(line: string, callFlow: CallFlowEvent[]): void {
  * Searches the log file for the last (most recent) Call-ID associated with the given dialed number.
  */
 async function getLastCallId(dialedNumber: string): Promise<string | null> {
-  if (!fs.existsSync(LOG_FILE)) {
-    return null;
-  }
-  let lastCallId: string | null = null;
-  try {
-    const rl = readline.createInterface({
-      input: fs.createReadStream(LOG_FILE, { encoding: 'utf8' }),
-      crlfDelay: Infinity
-    });
-    for await (const line of rl) {
-      if (line.includes(dialedNumber)) {
-        const match = line.match(/([a-f0-9-]{36})/i);
-        if (match) {
-          lastCallId = match[1];
+    if (!fs.existsSync(LOG_FILE)) return null;
+    let lastCallId: string | null = null;
+    try {
+      const rl = readline.createInterface({
+        input: fs.createReadStream(LOG_FILE, { encoding: 'utf8' }),
+        crlfDelay: Infinity
+      });
+      for await (const line of rl) {
+        if (line.includes(dialedNumber)) {
+          const match = line.match(/([a-f0-9-]{36})/i);
+          if (match) lastCallId = match[1];
+        }
+      }
+    } catch (err) {
+      const rl = readline.createInterface({
+        input: fs.createReadStream(LOG_FILE, { encoding: 'latin1' }),
+        crlfDelay: Infinity
+      });
+      for await (const line of rl) {
+        if (line.includes(dialedNumber)) {
+          const match = line.match(/([a-f0-9-]{36})/i);
+          if (match) lastCallId = match[1];
         }
       }
     }
-  } catch (err) {
-    // Fallback: try reading with 'latin1' encoding (iso-8859-1)
-    const rl = readline.createInterface({
-      input: fs.createReadStream(LOG_FILE, { encoding: 'latin1' }),
-      crlfDelay: Infinity
-    });
-    for await (const line of rl) {
-      if (line.includes(dialedNumber)) {
-        const match = line.match(/([a-f0-9-]{36})/i);
-        if (match) {
-          lastCallId = match[1];
-        }
-      }
-    }
+    return lastCallId;
   }
-  return lastCallId;
-}
+  
 
 // Define the type for hangup details.
 interface HangupDetails {
@@ -161,6 +155,7 @@ async function findHangupDetails(callId: string): Promise<HangupDetails> {
   return details;
 }
 
+
 /**
  * Reads the SIP log file and returns the lines that contain the given extension and domain.
  * For example, for extension "200" and domain "9506.ip-com.co.il",
@@ -170,9 +165,20 @@ async function findHangupDetails(callId: string): Promise<HangupDetails> {
  * @param domain The domain provided by the user.
  * @returns A Promise that resolves to a string with matching log lines.
  */
-async function getSIPAuthFailures(extension: string, domain: string): Promise<string> {
-    if (!fs.existsSync(LOG_FILE)) {
-      return `Log file ${LOG_FILE} does not exist.`;
+interface SIPAuthResult {
+    type: 'info' | 'warning' | 'danger';
+    message: string;
+    logs?: string;
+  }
+  
+  async function getSIPAuthFailures(extension: string, domain: string): Promise<SIPAuthResult> {
+    if (!fs.existsSync(LOG_FILE
+)) {
+      return {
+        type: 'danger',
+        message: `Log file ${LOG_FILE
+} does not exist.`
+      };
     }
     
     const searchString = `${extension}@${domain}`;
@@ -180,22 +186,21 @@ async function getSIPAuthFailures(extension: string, domain: string): Promise<st
     
     try {
       const rl = readline.createInterface({
-        input: fs.createReadStream(LOG_FILE, { encoding: 'utf8' }),
+        input: fs.createReadStream(LOG_FILE
+, { encoding: 'utf8' }),
         crlfDelay: Infinity
       });
-      
       for await (const line of rl) {
         if (line.includes(searchString)) {
           results.push(line);
         }
       }
     } catch (err) {
-      // Fallback using 'latin1' encoding if needed.
       const rl = readline.createInterface({
-        input: fs.createReadStream(LOG_FILE, { encoding: 'latin1' }),
+        input: fs.createReadStream(LOG_FILE
+, { encoding: 'latin1' }),
         crlfDelay: Infinity
       });
-      
       for await (const line of rl) {
         if (line.includes(searchString)) {
           results.push(line);
@@ -203,11 +208,45 @@ async function getSIPAuthFailures(extension: string, domain: string): Promise<st
       }
     }
     
-    return results.join('\n');
+    // Attempt to extract the SIP IP from the first matching line (if available)
+    let sipIP: string = "";
+    const ipRegex = /from ip\s+(\d+\.\d+\.\d+\.\d+)/i;
+    for (const line of results) {
+      const match = ipRegex.exec(line);
+      if (match && match[1]) {
+        sipIP = match[1];
+        break;
+      }
+    }
+    
+    // Case 1: No matching lines found.
+    if (results.length === 0) {
+      return {
+        type: 'info',
+        message: `We did not receive a registration request for ${searchString} to the server. This likely means your device is sending its SIP request to a different domain than the one you entered (${domain}). Please check your SIP configuration and update the domain if necessary (for example, you might need to use a domain like xxxx.ip-com.co.il).`
+      };
+    }
+    
+    // Case 2: Extension does not exist (if any line contains "Can't find user").
+    const extensionNotFound = results.some(line => line.includes("Can't find user"));
+    if (extensionNotFound) {
+      return {
+        type: 'danger',
+        message: `Extension ${searchString} does not exist on the server. Request sent from SIP IP: ${sipIP}`
+      };
+    }
+    
+    // Case 3: Registration attempt was sent (likely due to a wrong password).
+    return {
+      type: 'danger',
+      message: `Registration request for ${searchString} was sent from SIP IP: ${sipIP}, but authentication failed due to a wrong password.`,
+      logs: results.join('\n')
+    };
   }
   
-
-
+  
+  
+  
 /**
  * Extracts call flow details using the most recent Call-ID.
  */
@@ -263,36 +302,40 @@ async function parseCallFlow(callId: string, dialedNumber: string): Promise<Call
 
 // ----- Route Handlers -----
 
-// GET route for the main page (renders with default values)
-app.get('/logs/', async (req, res) => {
-    res.render('index', { number: "", flow: null, sipLog: null });
-  });
-  
-  // POST route for call flow search
-  app.post('/logs/', async (req, res) => {
-    const number: string = req.body.number || "";
-    let flow: any[] = [];
-    if (number) {
-      const callId = await getLastCallId(number);
-      if (callId) {
-        flow = await parseCallFlow(callId, number);
+app.post('/logs/', async (req, res) => {
+    // Identify which form was submitted via a hidden "action" field.
+    const action: string = req.body.action;
+    
+    if (action === 'callflow') {
+      // Handle Call Flow Search (existing logic)
+      const number: string = req.body.number || "";
+      let flow: any[] = [];
+      if (number) {
+        const callId = await getLastCallId(number);
+        if (callId) {
+          flow = await parseCallFlow(callId, number);
+        }
       }
+      res.render('index', { number, flow, sipAuthResult: null });
+      
+    } else if (action === 'sipauth') {
+      // Handle SIP Auth Analysis
+      const extension: string = req.body.extension;
+      const domain: string = req.body.domain;
+      const sipAuthResult = await getSIPAuthFailures(extension, domain);
+      res.render('index', { number: '', flow: null, sipAuthResult });
+      
+    } else {
+      res.render('index', { number: '', flow: null, sipAuthResult: null });
     }
-    // Render template with call flow data and leave sipLog null
-    res.render('index', { number, flow, sipLog: null });
   });
   
-  // POST route for SIP Auth Analysis
-  app.post('/sipauth/', async (req, res) => {
-    const extension: string = req.body.extension;
-    const domain: string = req.body.domain;
-    const sipLog = await getSIPAuthFailures(extension, domain);
-    // Render the same template, but now provide sipLog; call flow remains null
-    res.render('index', { number: '', flow: null, sipLog });
+  app.get('/logs/', (req, res) => {
+    res.render('index', { number: '', flow: null, sipAuthResult: null });
   });
-
-// Start the server on port 5000 and bind to 0.0.0.0.
-const PORT = 5000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on http://0.0.0.0:${PORT}`);
-});
+  
+  // Start the server.
+  const PORT = 5000;
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on http://0.0.0.0:${PORT}`);
+  });

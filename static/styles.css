@@ -24,8 +24,6 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    /* Set a minimum height so that both forms are similar in height */
-    min-height: 220px;
   }
   .form-container h2 {
     text-align: center;
@@ -44,7 +42,7 @@
   }
   .form-container button {
     display: block;       /* Make the button a block element */
-    margin: 20px auto;    /* Center it horizontally */
+    margin: 10px auto;    /* Center it horizontally */
     padding: 8px 16px;
     background-color: #007bff;
     border: none;
@@ -141,3 +139,51 @@
     font-family: monospace;
     font-size: 0.9em;
   }
+
+  /* Base style for the SIP Auth result box */
+.sip-result-box {
+    padding: 15px;
+    margin: 20px auto;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+    max-width: 800px;
+    animation: slideIn 1s ease-out;
+  }
+  
+  /* Info style (blue-ish) */
+  .sip-result-info {
+    background-color: #e7f3fe;
+    border: 1px solid #b3d8fd;
+    color: #31708f;
+  }
+  
+  /* Warning style (yellow-ish) - you can use this if needed */
+  .sip-result-warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    color: #856404;
+  }
+  
+  /* Danger style (red) */
+  .sip-result-danger {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    /* Adding a shaking animation for extra emphasis */
+    animation: shake 0.5s infinite alternate, slideIn 1s ease-out;
+  }
+  
+  /* Animation for sliding in the box */
+  @keyframes slideIn {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  /* Shaking animation for danger alerts */
+  @keyframes shake {
+    from { transform: translateX(-2px); }
+    to { transform: translateX(2px); }
+  }
+  
+      /* Additional custom styles if needed */
