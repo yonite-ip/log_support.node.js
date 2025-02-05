@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Call Flow Diagram & SIP Auth Analysis</title>
+  <link rel="stylesheet" href="/logs/static/styles.css">
+</head>
+<body>
+  <h1>Call Flow Diagram & SIP Auth Analysis</h1>
+  
+  <!-- Row containing both forms -->
+  <div class="form-row">
+    <!-- Call Flow Log Form -->
+    <div class="form-container">
+      <h2>Call Flow Log</h2>
+      <form action="/logs/" method="post">
+        <label for="number">Enter Dialed Number:</label>
+        <input type="text" name="number" id="number" value="<%= number %>" required>
+        <button type="submit">Search</button>
+      </form>
+    </div>
+    
+    <!-- SIP Auth Analysis Form -->
+    <div class="form-container">
+      <h2>SIP Auth Analysis</h2>
+      <form action="/sipauth/" method="post">
+        <div class="input-row">
+          <div class="input-group">
+            <label for="extension">Extension:</label>
+            <input type="text" name="extension" id="extension" required>
+          </div>
+          <div class="input-group">
+            <label for="domain">Domain:</label>
+            <input type="text" name="domain" id="domain" required>
+          </div>
+        </div>
+        <button type="submit">Analyze</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Call Flow Diagram (if present) -->
+  <% if (flow && flow.length > 0) { %>
+    <h2 style="text-align: center;">Call Flow Details</h2>
+    <div class="diagram-container">
+      <% flow.forEach(function(item) { %>
+        <div class="box" onclick="toggleBox(this)">
+          <div class="box-header"><%= item.event %></div>
+          <% if (item.destination) { %>
+            <div class="box-destination">Destination: <%= item.destination %></div>
+          <% } %>
+          <div class="box-content">
+            <p><%= item.log %></p>
+            <% if (item.party) { %>
+              <p><strong>Party:</strong> <%= item.party %></p>
+            <% } %>
+            <% if (item.reason) { %>
+              <p><strong>Reason:</strong> <%= item.reason %></p>
+            <% } %>
+            <% if (item.detailed_reason) { %>
+              <p><strong>Details:</strong> <%= item.detailed_reason %></p>
+            <% } %>
+            <% if (item.who_ended) { %>
+              <p><strong>Who Ended:</strong> <%= item.who_ended %></p>
+            <% } %>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+  <% } %>
+
+  <!-- SIP Auth Analysis Log (if present) -->
+  <% if (typeof sipLog !== 'undefined' && sipLog) { %>
+    <h2 style="text-align: center;">SIP Auth Analysis Result</h2>
+    <div class="sip-log-container">
+      <pre><%= sipLog %></pre>
+    </div>
+  <% } %>
+  
+
+  <script>
+    // Toggle the expanded state of a box on click
+    function toggleBox(element) {
+      element.classList.toggle('expanded');
+    }
+  </script>
+</body>
+</html>

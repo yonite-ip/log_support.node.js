@@ -1,0 +1,143 @@
+ /* Basic styling for large-screen layout */
+ body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  h1 {
+    text-align: center;
+    margin-top: 20px;
+  }
+  .form-row {
+    display: flex;
+    justify-content: center;
+    align-items: stretch; /* Ensures both forms are the same height */
+    gap: 40px;
+    margin: 20px;
+  }
+  .form-container {
+    border: 1px solid #ccc;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    /* Set a minimum height so that both forms are similar in height */
+    min-height: 220px;
+  }
+  .form-container h2 {
+    text-align: center;
+    margin-top: 0;
+  }
+  .form-container label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  .form-container input {
+    width: 100%;
+    padding: 5px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+  }
+  .form-container button {
+    display: block;       /* Make the button a block element */
+    margin: 20px auto;    /* Center it horizontally */
+    padding: 8px 16px;
+    background-color: #007bff;
+    border: none;
+    color: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .form-container button:hover {
+    background-color: #0056b3;
+  }
+  /* Specific styles for the SIP Auth input row */
+  .input-row {
+    display: flex;
+    gap: 10px;
+  }
+  .input-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Diagram container and boxes for Call Flow */
+  .diagram-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    padding: 20px;
+  }
+  .box {
+    border: 2px solid #007bff;
+    border-radius: 8px;
+    padding: 10px;
+    width: 250px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #f8f9fa;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+    position: relative;
+  }
+  .box:hover {
+    box-shadow: 4px 4px 8px rgba(0,0,0,0.2);
+  }
+  .box.expanded {
+    width: 350px;
+    background-color: #fff;
+  }
+  .box-header {
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  .box-destination {
+    font-size: 0.9em;
+    margin-bottom: 8px;
+    color: #555;
+  }
+  .box-content {
+    display: none;
+    font-size: 0.85em;
+    color: #333;
+    border-top: 1px dashed #ccc;
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+  .box.expanded .box-content {
+    display: block;
+  }
+  .box::after {
+    content: '\25BC';
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    font-size: 0.8em;
+    color: #007bff;
+    transition: transform 0.3s ease;
+  }
+  .box.expanded::after {
+    transform: rotate(180deg);
+  }
+  /* Styling for the SIP Auth Analysis result log */
+  .sip-log-container {
+    padding: 20px;
+    margin: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .sip-log-container pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: monospace;
+    font-size: 0.9em;
+  }
